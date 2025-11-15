@@ -1,0 +1,63 @@
+✅ 根据 Apple 官方文档修复权限问题
+
+参考文档：
+- https://developer.apple.com/documentation/corelocation/cllocationmanager
+- https://developer.apple.com/documentation/corelocation/requesting_authorization_to_use_location_services
+
+关键发现（来自 Apple 官方）：
+
+1. macOS 权限模型：
+   "On macOS, When in Use and Always authorizations are functionally equivalent.
+    Because macOS apps continue to run in the background after their initial launch,
+    they are always in use."
+   
+   翻译：macOS 上，When In Use 和 Always 权限功能完全相同，因为 macOS app 启动后会持续在后台运行。
+
+2. 必需的 Info.plist 键：
+   - NSLocationWhenInUseUsageDescription (所有平台) ✅
+   - NSLocationAlwaysAndWhenInUseUsageDescription (如果请求 Always) ✅
+   - NSLocationUsageDescription (macOS 专用) ✅
+   - NSLocationAlwaysUsageDescription (已弃用但兼容) ✅
+
+3. 推荐的授权流程（来自 Apple 示例代码）：
+   ```swift
+   func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
+       switch manager.authorizationStatus {
+       case .authorizedWhenInUse:
+           enableLocationFeatures()
+       case .restricted, .denied:
+           disableLocationFeatures()
+       case .notDetermined:
+           manager.requestWhenInUseAuthorization()
+       default:
+           break
+       }
+   }
+   ```
+
+已实现的修复：
+
+1. ✅ LocationManager.swift
+   - 改用 requestWhenInUseAuthorization()（Apple 推荐）
+   - macOS 上与 requestAlwaysAuthorization() 效果相同
+
+2. ✅ WeatherViewModel.swift
+   - 使用 switch-case 处理所有授权状态（遵循 Apple 示例）
+   - 支持 .authorizedWhenInUse 和 .authorizedAlways
+   - 包含 @unknown default 处理未来新状态
+
+3. ✅ Info.plist
+   - 包含所有必需的权限描述键
+
+4. ✅ project.pbxproj + Weather.entitlements
+   - ENABLE_APP_SANDBOX = YES
+   - ENABLE_NETWORK_CLIENT = YES
+   - ENABLE_RESOURCE_ACCESS_LOCATION = YES
+   - com.apple.security.personal-information.location
+
+测试步骤：
+1. Clean Build Folder (Cmd+Shift+K)
+2. 重新运行应用
+3. 点击"获取当前位置"
+4. 应该看到系统权限对话框
+5. 选择允许后应该能获取天气数据

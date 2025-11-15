@@ -1,0 +1,58 @@
+✅ 修复网络权限和代理问题
+
+错误分析：
+错误: "Operation not permitted" 连接到 127.0.0.1:7890
+原因: 
+1. project.pbxproj 中缺少 CODE_SIGN_ENTITLEMENTS 配置
+2. URLSession 尝试使用系统代理（App Sandbox 阻止连接本地端口）
+
+已实施的修复：
+
+1. ✅ 添加 CODE_SIGN_ENTITLEMENTS 配置
+   修改: Weather.xcodeproj/project.pbxproj
+   添加到 Debug 和 Release 配置:
+   ```
+   CODE_SIGN_ENTITLEMENTS = Weather/Weather.entitlements;
+   ```
+   
+   现在 Weather.entitlements 中的权限会生效：
+   - com.apple.security.app-sandbox = true
+   - com.apple.security.network.client = true
+   - com.apple.security.personal-information.location = true
+
+2. ✅ 禁用 URLSession 代理
+   修改: WeatherService.swift
+   ```swift
+   init(session: URLSession = .shared) {
+       let configuration = URLSessionConfiguration.default
+       configuration.connectionProxyDictionary = [:]  // 禁用代理
+       self.session = URLSession(configuration: configuration)
+   }
+   ```
+   
+   原因：
+   - macOS 系统可能配置了代理（127.0.0.1:7890）
+   - App Sandbox 阻止连接到本地端口
+   - 设置 connectionProxyDictionary = [:] 强制直连
+
+关键配置检查：
+
+✅ Weather.entitlements 存在
+✅ project.pbxproj 指向 entitlements 文件
+✅ ENABLE_APP_SANDBOX = YES
+✅ ENABLE_HARDENED_RUNTIME = YES
+✅ ENABLE_NETWORK_CLIENT = YES
+✅ ENABLE_RESOURCE_ACCESS_LOCATION = YES
+✅ URLSession 禁用代理
+
+测试步骤：
+1. Clean Build Folder (Cmd+Shift+K)
+2. 重新运行应用
+3. 点击"获取当前位置"
+4. 应该能成功连接 api.open-meteo.com
+5. 不再出现 "Operation not permitted" 错误
+
+技术说明：
+- App Sandbox 限制访问本地网络端口（包括代理）
+- 通过设置空的 connectionProxyDictionary 强制直连外部 API
+- 这不影响正常的网络访问，只是绕过系统代理

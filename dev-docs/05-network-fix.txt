@@ -1,0 +1,21 @@
+✅ 已修复网络权限问题
+
+问题原因：
+App Sandbox 阻止了网络连接（Operation not permitted）
+
+解决方案：
+1. ✅ 创建了 Weather.entitlements 文件
+   - 启用 com.apple.security.network.client（网络客户端权限）
+   - 保留 com.apple.security.personal-information.location（位置权限）
+
+2. ✅ 在 project.pbxproj 中添加网络权限配置
+   - ENABLE_NETWORK_CLIENT = YES
+   - ENABLE_NETWORK_SERVER = NO
+
+现在应该能正常：
+- 访问 api.open-meteo.com 获取天气数据
+- 请求位置权限
+- 进行地理编码（城市搜索）
+
+下一步：
+从 Xcode 重新运行应用（Product → Clean Build Folder，然后重新运行）

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>This app uses your location to display current weather information for your area.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>This app uses your location to display current weather information for your area.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>This app uses your location to display current weather information for your area.</string>
+	<key>NSLocationDefaultAccuracyReduction</key>
+	<false/>
+	<key>NSLocationUsageDescription</key>
+	<string>This app uses your location to display current weather information for your area.</string>
+</dict>
+</plist>
