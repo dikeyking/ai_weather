@@ -4,6 +4,7 @@
 //
 //  Created by Dikey King on 2025/11/15.
 //
+//  all by AI
 
 import SwiftUI
 
