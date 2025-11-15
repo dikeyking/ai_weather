@@ -13,7 +13,7 @@ import Combine
 @MainActor
 class WeatherViewModel: ObservableObject {
     @Published var savedLocations: [LocationInfo] = []
-    @Published var weatherData: [UUID: Weather] = [:]
+    @Published var weatherData: [LocationInfo: Weather] = [:]  // Changed key from UUID to LocationInfo
     @Published var selectedLocation: LocationInfo?
     @Published var isLoading = false
     @Published var error: String?
@@ -98,7 +98,7 @@ class WeatherViewModel: ObservableObject {
                 saveSavedLocations()
             }
             
-            weatherData[weather.id] = weather
+            weatherData[weather.location] = weather  // Use location as key
             selectedLocation = weather.location
             isLoading = false
         } catch {
@@ -154,7 +154,7 @@ class WeatherViewModel: ObservableObject {
         
         do {
             let weather = try await weatherService.fetchWeather(for: location)
-            weatherData[weather.id] = weather
+            weatherData[location] = weather  // Use location as key
             selectedLocation = location
             isLoading = false
         } catch {
@@ -171,7 +171,7 @@ class WeatherViewModel: ObservableObject {
         for location in savedLocations {
             do {
                 let weather = try await weatherService.fetchWeather(for: location)
-                weatherData[weather.id] = weather
+                weatherData[location] = weather  // Use location as key
             } catch {
                 print("Failed to refresh weather for \(location.name): \(error)")
             }
@@ -183,7 +183,7 @@ class WeatherViewModel: ObservableObject {
         saveSavedLocations()
         
         // Remove from weather data
-        weatherData = weatherData.filter { $0.value.location != location }
+        weatherData.removeValue(forKey: location)
         
         // Update selection
         if selectedLocation == location {
@@ -194,7 +194,7 @@ class WeatherViewModel: ObservableObject {
     // MARK: - Helper: Get Weather for Location
     
     func getWeather(for location: LocationInfo) -> Weather? {
-        return weatherData.values.first { $0.location == location }
+        return weatherData[location]  // Direct dictionary lookup
     }
     
     // MARK: - Persistence
