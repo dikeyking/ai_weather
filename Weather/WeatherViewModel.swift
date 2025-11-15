@@ -210,6 +210,23 @@ class WeatherViewModel: ObservableObject {
            let decoded = try? JSONDecoder().decode([LocationInfo].self, from: data) {
             savedLocations = decoded
             selectedLocation = decoded.first
+        } else {
+            // Initialize with default cities if no saved locations
+            let defaultCities = [
+                LocationInfo(name: "北京", latitude: 39.9042, longitude: 116.4074),
+                LocationInfo(name: "上海", latitude: 31.2304, longitude: 121.4737),
+                LocationInfo(name: "大理", latitude: 25.6008, longitude: 100.2038)
+            ]
+            savedLocations = defaultCities
+            selectedLocation = defaultCities.first
+            saveSavedLocations()
+            
+            // Fetch weather for all default cities
+            Task {
+                for city in defaultCities {
+                    await fetchWeather(for: city)
+                }
+            }
         }
     }
 }
